@@ -98,10 +98,26 @@ for i in range(np.size(xdata,1)):
  
 figure['layout']['sliders'] = [sliders_dict]
 
-# pl1 = plotly.offline.plot(figure, filename='junk3.html', config={'displayModeBar': False}, show_link=False)
 
-# Hack to stop autoplay
-pl1 = plotly.offline.plot(figure, output_type='div', config={'displayModeBar': False}, show_link=False)
+
+# output without plotly library
+# plotly.offline.plot(figure, filename='junk3.html', include_plotlyjs=False,
+#             config={'displayModeBar': False}, show_link=False)
+
+# output without plotly library
+plotly.offline.plot(figure, filename='junk3.html', include_plotlyjs=False,
+            config={'displayModeBar': False}, show_link=False)
+
+
+# output as div without plotly library
+# pl1 = plotly.offline.plot(figure, filename='plotlyDiv.html', include_plotlyjs=False,
+#             output_type='div', config={'displayModeBar': False}, show_link=False)
+# with open('plotlyDiv.html', 'w') as fd:
+#     fd.write(pl1)
+
+# Hack to remove autoplay
+pl1 = plotly.offline.plot(figure, output_type='div', include_plotlyjs=False, 
+                          config={'displayModeBar': False}, show_link=False)
 pl1 = re.sub("\\.then\\(function\\(\\)\\{Plotly\\.animate\\(\\'[0-9a-zA-Z-]*\\'\\)\\;\\}\\)", "", pl1)
 with open('junky.html', 'w') as fd:
     fd.write(pl1)

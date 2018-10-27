@@ -4,7 +4,7 @@ import numpy as np
 from scipy.stats import norm
 import pickle
 
-numFrames = 1 # 900 number of frames in animation, 1 minute = 900 frames at 15 fps
+numFrames = 2 # 900 number of frames in animation, 1 minute = 900 frames at 15 fps
 numParticles = 1 # 500 is good number
 boxSize = 4
 xmin = -boxSize
