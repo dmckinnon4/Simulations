@@ -15,7 +15,6 @@ plotBcgdCol = 'white'
 lineCol = '#808080'
 zeroLineCol = '#cccccc'
 
-
 # make figure
 figure = {
     'data': [],
