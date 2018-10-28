@@ -1,14 +1,19 @@
-# creates data for Plotly
+# creates data for Plotly, produces an average of entropy
 
 import numpy as np
 from scipy.stats import norm
 import pickle
 
-numFrames = 2 # 900 number of frames in animation, 1 minute = 900 frames at 15 fps
-numParticles = 1 # 500 is good number
+numFrames = 500 # 500 number of frames in animation
+numParticles = 500 # 500 works OK
+frameChange = 50 # 50, number of frames before making membrane 'permeable'
+numAverages = 10
+params = [numFrames, numParticles, frameChange]
+
 boxSize = 4
 xmin = -boxSize
 xmax = boxSize
+xmid = 0
 ymin = -boxSize
 ymax = boxSize
 dotSize = boxSize/30 # this is a kludge to keep all dots inside box outline
@@ -16,7 +21,7 @@ dotSize = boxSize/30 # this is a kludge to keep all dots inside box outline
 def walk(numFrames, numParticles, xmin, xmax, ymin, ymax, dotSize):
     # Process parameters
     delta = 0.25
-    dt = 2.5 # choose value to get even mixing by 1 minute
+    dt = 5 # 2.5 choose value to get even mixing by 1 minute
     dotscale = delta**2 * dt
     dotscale2 = dotscale/2
     xdata = np.zeros((numFrames, numParticles))
@@ -28,13 +33,17 @@ def walk(numFrames, numParticles, xmin, xmax, ymin, ymax, dotSize):
         for k in range(numFrames):
             # check particles are within limits and adjust if necessary
             if x < (xmin + dotSize):
-                x =  xmin + dotSize + abs(norm.rvs(scale = dotscale2))
-            if x > (xmax - dotSize):
-                x =  xmax - dotSize - abs(norm.rvs(scale = dotscale2))
+                x = xmin + dotSize + abs(norm.rvs(scale = dotscale2))
+            if k > frameChange: # change membrane 'permeability'
+                if x > (xmax - dotSize):
+                    x = xmax - dotSize - abs(norm.rvs(scale = dotscale2))
+            else:
+                if x > (xmid - dotSize):
+                    x = xmid - dotSize - abs(norm.rvs(scale = dotscale2))
             if y < (ymin + dotSize):
-                y =  ymin + dotSize + abs(norm.rvs(scale = dotscale2))
+                y = ymin + dotSize + abs(norm.rvs(scale = dotscale2))
             if y > (ymax - dotSize):
-                y =  ymax - dotSize - abs(norm.rvs(scale = dotscale2))
+                y = ymax - dotSize - abs(norm.rvs(scale = dotscale2))
             # add point to array
             xdata[k,i] = x
             ydata[k,i] = y
@@ -43,7 +52,38 @@ def walk(numFrames, numParticles, xmin, xmax, ymin, ymax, dotSize):
             y = y + norm.rvs(scale = dotscale)
     return [xdata, ydata]
 
-data = walk(numFrames, numParticles, xmin, xmax, ymin, ymax, dotSize)
+def entropy(numFrames, numParticles, numAverages):
+    box2List =[]
+    for i in range(numAverages):
+        x1data, y1data = walk(numFrames, numParticles, xmin, xmax, ymin, ymax, dotSize)
 
-# write to pickle
+        box2Particles = np.zeros(numFrames)
+        for k in range(numFrames):
+            x = x1data[k,:]
+            inBox2 = 0
+            for i in range(numParticles):
+                if 0 <= x[i] : # only need to find if x is positive to test if particle in box 2
+                    inBox2 = inBox2 + 1
+            box2Particles[k] = inBox2
+        box2List.append(box2Particles)
+    box2Particles = np.mean(box2List, axis=0)
+        
+    # format data for plotting
+    x2data = np.zeros((numFrames, numFrames))
+    y2data = np.ones((numFrames, numFrames))*-10 # set negative value so not seen on graph
+    for i in range(numFrames):
+        for k in range(numFrames):
+            # add point to array
+            x2data[i,k] = k
+            if k <= i:
+                y2data[i,k] = box2Particles[k]
+                
+    # returns final version of x1data, y1data
+    return x1data, y1data, x2data, y2data
+    
+x1data, y1data, x2data, y2data = entropy(numFrames, numParticles, numAverages)  
+
+data = [params, x1data, y1data, x2data, y2data]
+
+# write with pickle
 pickle.dump(data, open( "data.pkl", "wb" ) )
