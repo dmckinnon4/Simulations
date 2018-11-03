@@ -2,6 +2,7 @@ import numpy as np
 import plotly
 import pickle
 import re
+from Diffusion.PlotLy.BrownianData2 import numFrames
 
 # get and unpack data
 data =  pickle.load( open( "data.pkl", "rb" ) )
@@ -29,8 +30,8 @@ fig = dict(
             'zeroline': False, 'showspikes': False},
         xaxis2 = {'domain': [0.62, 1.0], 'anchor': 'y2', 'title': 'Time', 'range': [0, numFrames], 'showline': True, 'zeroline': False,
                 'showgrid': False,'showticklabels': False},
-        yaxis2 = {'domain': [0.0, 1.0], 'anchor': 'x2', 'title': 'Entropy', 'range': [-10, 300], 'showline': True, 'zeroline': False,
-                'ticktext': ['Equil.'], 'tickvals': [250],'tickmode': 'array','showticklabels': True},
+        yaxis2 = {'domain': [0.0, 1.0], 'anchor': 'x2', 'title': 'Entropy', 'range': [-0.01, 1.1], 'showline': True, 'zeroline': False,
+                'ticktext': ['Equil.'], 'tickvals': [1.0],'tickmode': 'array','showticklabels': True},
         hovermode = False,
         plot_bgcolor = plotBcgdCol,
         margin = {'t': 4, 'b': 2, 'l': 2, 'r': 2},
@@ -57,8 +58,8 @@ fig = dict(
             
         {'type': 'scatter', # trace 2, entropy
         'name': 'f2', 
-        'x': np.around(x2data[0,:], decimals=3),
-        'y': np.around(y2data[0,:], decimals=3), 
+        'x': np.around(x2data[0:1], decimals=3),
+        'y': np.around(y2data[0:1], decimals=3), 
         'mode': 'markers',
         'marker': {'size': 3, 'color': dot2Col}, 
         'showlegend': False, 'xaxis': 'x2', 'yaxis': 'y2'},
@@ -70,12 +71,12 @@ fig = dict(
 
 # load data into frames
 frames = [dict(name=k,
-               data=[dict(x = np.around(x1data[k,:], decimals=3), 
+               data=[dict(x = np.around(x1data[k,:], decimals=3),   # reduce precision to reduce file size
                           y = np.around(y1data[k,:], decimals=3)),  # particles
-                    dict(x = [0.0  , 0.0], y = [-4.0,   4.0],       # membrane
+                    dict(x = [0.0, 0.0], y = [-4.0, 4.0],           # membrane
                         line=dict(color=(pl_colors[k]))),  
-                    dict(x = np.around(x2data[k,:], decimals=3),    # entropy
-                         y = np.around(y2data[k,:], decimals=3), 
+                    dict(x = np.around(x2data[0:k+1], decimals=3),    # entropy
+                         y = np.around(y2data[0:k+1], decimals=3), 
                        )
                    ],
                traces=[0,1,2]) for k in range(numFrames)]
@@ -121,9 +122,9 @@ fig['layout'].update(updatemenus=updatemenus,
  
 
 testing = True
-testing = False
+# testing = False
 if testing:
-    pl1 = plotly.offline.plot(fig, filename='BrownianPlotly.html', include_plotlyjs=True,
+    plotly.offline.plot(fig, filename='testFile.html', include_plotlyjs=True,
                 config={'displayModeBar': False}, show_link=False)
 else:
     # Hack to remove autoplay output to include in textbook

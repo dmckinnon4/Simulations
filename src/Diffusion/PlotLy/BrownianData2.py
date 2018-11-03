@@ -4,10 +4,10 @@ import numpy as np
 from scipy.stats import norm
 import pickle
 
-numFrames = 501 # 500 number of frames in animation
-numParticles = 500 # 500 works OK
+numFrames = 201 # 501 number of frames in animation
+numParticles = 50 # 500 works OK
 frameChange = 50 # 50, number of frames before making membrane 'permeable'
-numAverages = 10 # 10, number of times to average entropy data
+numAverages = 100 # 10, number of times to average entropy data
 params = [numFrames, numParticles, frameChange]
 
 boxSize = 4
@@ -67,18 +67,10 @@ def entropy(numFrames, numParticles, numAverages):
             box2Particles[k] = inBox2
         box2List.append(box2Particles)
     box2Particles = np.mean(box2List, axis=0)
-        
-    # format data for plotting
-    x2data = np.zeros((numFrames, numFrames))
-    y2data = np.ones((numFrames, numFrames))*-20 # set negative value so not seen on graph
-    for i in range(numFrames):
-        for k in range(numFrames):
-            # add point to array
-            x2data[i,k] = k
-            if k <= i:
-                y2data[i,k] = box2Particles[k]
-                
-    # returns final version of x1data, y1data
+    
+    y2data = box2Particles/numParticles*2   # normalize the entropy values to number of particles
+    x2data = np.arange(numFrames)                
+    # returns last version of x1data, y1data
     return x1data, y1data, x2data, y2data
     
 x1data, y1data, x2data, y2data = entropy(numFrames, numParticles, numAverages)  
