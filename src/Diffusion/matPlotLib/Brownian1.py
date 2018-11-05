@@ -3,6 +3,13 @@ import matplotlib.pyplot as plt
 plt.rcParams['animation.ffmpeg_path'] = '/anaconda3/bin/ffmpeg' # this has to come before animation import
 import matplotlib.animation as animation
 from scipy.stats import norm
+import pickle
+
+# colors
+dot1Col = '#990000'
+dot2Col = '#3b528b'
+plotBcgdCol = 'white'
+lineCol = '#808080'
 
 numFrames = 900 # 900 number of frames in animation, 1 minute = 900 frames at 15 fps
 numParticles = 500 # 500 is good number
@@ -42,23 +49,35 @@ def init():
     scatPlot.set_offsets([[], []])
     return [scatPlot]
 
-def update(i, scatPlot, data):
+def update(i, plots, data):
+    scatPlot,linePlot = plots
     scatPlot.set_offsets(data[i])
+    scatPlot = plt.plot([0.0,0.0], [-4.0,4.0], marker='.', linestyle=':', color='r',)
     return [scatPlot]
 
-data = walk(numFrames, numParticles, xmin, xmax, ymin, ymax, dotSize)
+newdata = True
+newdata = False
+if newdata:
+    data = walk(numFrames, numParticles, xmin, xmax, ymin, ymax, dotSize)
+    # write to file with pickle
+    pickle.dump(data, open( "data.pkl", "wb" ) )
+else: 
+    # get and unpack data
+    data =  pickle.load( open( "data.pkl", "rb" ) )
 
 fig = plt.figure()
 ax = plt.axes(xlim=(xmin, xmax), ylim=(ymin, ymax))
-ax.tick_params(bottom=False, left=False, labelbottom=False, labelleft=False ) 
+ax.tick_params(bottom=False, left=False, labelbottom=False, labelleft=False) 
 scatPlot = plt.scatter([], [], s=100)
+linePlot = plt.plot([0.0,0.0], [-4.0,4.0], marker='.', linestyle=':', color='r',)
+plots = [scatPlot,linePlot]
 
-anim = animation.FuncAnimation(fig, update, init_func=init, fargs=(scatPlot, data), 
+anim = animation.FuncAnimation(fig, update, init_func=init, fargs=(plots, data), 
                                interval=1, frames=numFrames, blit=True, repeat=False)
 
 # parameters have big effect on video quality and file size, dpi can be reduced for these small videos
 # dpi <100 crashes program
 # bitrate=-1 gives best quality, but have to worry about file size, do not need a very high bit rate
-anim.save('Brownian1.mp4', fps=15, writer='ffmpeg', bitrate=2000, dpi=100)
+anim.save('Brownian1.mp4', fps=30, writer='ffmpeg', bitrate=2000, dpi=100)
 
 plt.show()

@@ -2,7 +2,7 @@ import numpy as np
 import plotly
 import pickle
 import re
-from Diffusion.PlotLy.BrownianData2 import numFrames
+import time
 
 # get and unpack data
 data =  pickle.load( open( "data.pkl", "rb" ) )
